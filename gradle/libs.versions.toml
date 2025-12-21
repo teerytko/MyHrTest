@@ -1,5 +1,6 @@
 [versions]
 agp = "8.12.3"
+graphview = "4.2.2"
 kotlin = "2.0.21"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -8,6 +9,10 @@ espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.9.3"
 activityCompose = "1.10.1"
 composeBom = "2024.09.00"
+core = "$vicoVersion"
+composeM3 = "$vicoVersion"
+vicoVersion = "1.15.0"
+vico = "2.3.6"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

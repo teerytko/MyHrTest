@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.neodemus.myhrtest.ui.theme.MyHrTestTheme
 
+
 class MainActivity : ComponentActivity() {
 
     private val viewModel: HeartRateViewModel by viewModels()
@@ -70,7 +71,7 @@ fun HeartRateScreen(viewModel: HeartRateViewModel) {
     val heartRate by viewModel.heartRate.collectAsState()
     val connectedDevice by viewModel.connectedDevice.collectAsState()
     val connectionState by viewModel.connectionState.collectAsState()
-
+    //val hrHistory by viewModel.hrHistory.collectAsState()
     Column(
         modifier = Modifier
             .fillMaxSize()
