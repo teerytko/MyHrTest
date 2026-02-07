@@ -21,12 +21,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.neodemus.myhrtest.ui.theme.MyHrTestTheme
 
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: HeartRateViewModel by viewModels()
+    private val heartRateViewModel: HeartRateViewModel by viewModels()
+    private val vo2MaxViewModel: Vo2MaxViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +64,15 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    HeartRateScreen(viewModel = viewModel)
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = "hr") {
+                        composable("hr") {
+                            HeartRateScreen(viewModel = heartRateViewModel, navController = navController)
+                        }
+                        composable("vo2max") {
+                            Vo2MaxScreen(viewModel = vo2MaxViewModel, navController = navController)
+                        }
+                    }
                 }
             }
         }
@@ -67,7 +80,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun HeartRateScreen(viewModel: HeartRateViewModel) {
+fun HeartRateScreen(viewModel: HeartRateViewModel, navController: NavController) {
     val heartRate by viewModel.heartRate.collectAsState()
     val connectedDevice by viewModel.connectedDevice.collectAsState()
     val connectionState by viewModel.connectionState.collectAsState()
@@ -80,7 +93,7 @@ fun HeartRateScreen(viewModel: HeartRateViewModel) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Garmin HR Monitor",
+            text = "HR Monitor",
             style = MaterialTheme.typography.headlineMedium
         )
         Spacer(modifier = Modifier.height(32.dp))
@@ -112,6 +125,63 @@ fun HeartRateScreen(viewModel: HeartRateViewModel) {
         Button(onClick = { viewModel.startScan() }) {
             Text("Start Scan")
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = { navController.navigate("vo2max") }) {
+            Text("Go to VO2max")
+        }
+    }
+}
+
+@Composable
+fun Vo2MaxScreen(viewModel: Vo2MaxViewModel, navController: NavController) {
+    val vo2 by viewModel.vo2.collectAsState()
+    val vco2 by viewModel.vco2.collectAsState()
+    val rq by viewModel.rq.collectAsState()
+    val connectedDevice by viewModel.connectedDevice.collectAsState()
+    val connectionState by viewModel.connectionState.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "VO2max Monitor",
+            style = MaterialTheme.typography.headlineMedium
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(text = "VO2: ${String.format("%.2f", vo2)}", fontSize = 40.sp)
+        Text(text = "VCO2: ${String.format("%.2f", vco2)}", fontSize = 40.sp)
+        Text(text = "RQ: ${String.format("%.2f", rq)}", fontSize = 40.sp)
+
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text(
+            text = "Device: $connectedDevice",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = "Status: $connectionState",
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = { viewModel.startScan() }) {
+            Text("Start Scan")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = { navController.navigate("hr") }) {
+            Text("Go to Heart Rate")
+        }
     }
 }
 
@@ -128,7 +198,7 @@ fun HeartRateScreenPreview() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "Garmin HR Monitor", style = MaterialTheme.typography.headlineMedium)
+            Text(text = "HR Monitor", style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(32.dp))
             Text(text = "75", fontSize = 80.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
             Text(text = "BPM", style = MaterialTheme.typography.bodyLarge)
@@ -138,6 +208,10 @@ fun HeartRateScreenPreview() {
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = { }) {
                 Text("Start Scan")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = { }) {
+                Text("Go to VO2max")
             }
         }
     }
