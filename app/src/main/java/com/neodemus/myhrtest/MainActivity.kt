@@ -7,11 +7,19 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -72,6 +80,13 @@ class MainActivity : ComponentActivity() {
                         composable("vo2max") {
                             Vo2MaxScreen(viewModel = vo2MaxViewModel, navController = navController)
                         }
+                        composable("connections") {
+                            ConnectionSettingsScreen(
+                                heartRateViewModel = heartRateViewModel,
+                                vo2MaxViewModel = vo2MaxViewModel,
+                                navController = navController
+                            )
+                        }
                     }
                 }
             }
@@ -84,7 +99,7 @@ fun HeartRateScreen(viewModel: HeartRateViewModel, navController: NavController)
     val heartRate by viewModel.heartRate.collectAsState()
     val connectedDevice by viewModel.connectedDevice.collectAsState()
     val connectionState by viewModel.connectionState.collectAsState()
-    //val hrHistory by viewModel.hrHistory.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -92,6 +107,10 @@ fun HeartRateScreen(viewModel: HeartRateViewModel, navController: NavController)
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        ScreenMenu(navController = navController, currentRoute = "hr")
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
             text = "HR Monitor",
             style = MaterialTheme.typography.headlineMedium
@@ -120,17 +139,6 @@ fun HeartRateScreen(viewModel: HeartRateViewModel, navController: NavController)
             style = MaterialTheme.typography.bodyMedium
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = { viewModel.startScan() }) {
-            Text("Start Scan")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = { navController.navigate("vo2max") }) {
-            Text("Go to VO2max")
-        }
     }
 }
 
@@ -149,6 +157,10 @@ fun Vo2MaxScreen(viewModel: Vo2MaxViewModel, navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        ScreenMenu(navController = navController, currentRoute = "vo2max")
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
             text = "VO2max Monitor",
             style = MaterialTheme.typography.headlineMedium
@@ -171,16 +183,75 @@ fun Vo2MaxScreen(viewModel: Vo2MaxViewModel, navController: NavController) {
             style = MaterialTheme.typography.bodyMedium
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
 
-        Button(onClick = { viewModel.startScan() }) {
-            Text("Start Scan")
+@Composable
+fun ConnectionSettingsScreen(
+    heartRateViewModel: HeartRateViewModel,
+    vo2MaxViewModel: Vo2MaxViewModel,
+    navController: NavController
+) {
+    val heartRateState by heartRateViewModel.connectionState.collectAsState()
+    val vo2State by vo2MaxViewModel.connectionState.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        ScreenMenu(navController = navController, currentRoute = "connections")
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Connections",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(text = "Heart Rate: $heartRateState", style = MaterialTheme.typography.bodyMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = { heartRateViewModel.startScan() }) {
+            Text("Connect Heart Rate Monitor")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Button(onClick = { navController.navigate("hr") }) {
-            Text("Go to Heart Rate")
+        Text(text = "VO2: $vo2State", style = MaterialTheme.typography.bodyMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(onClick = { vo2MaxViewModel.startScan() }) {
+            Text("Connect VO2 Sensor")
+        }
+    }
+}
+
+@Composable
+private fun ScreenMenu(navController: NavController, currentRoute: String) {
+    val menuItems = listOf(
+        "hr" to "Heart Rate",
+        "vo2max" to "VO2 Max",
+        "connections" to "Connections"
+    )
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        menuItems.forEach { (route, label) ->
+            TextButton(
+                enabled = currentRoute != route,
+                onClick = {
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                    }
+                }
+            ) {
+                Text(label)
+            }
         }
     }
 }
@@ -189,8 +260,6 @@ fun Vo2MaxScreen(viewModel: Vo2MaxViewModel, navController: NavController) {
 @Composable
 fun HeartRateScreenPreview() {
     MyHrTestTheme {
-        // We can't use a real ViewModel in a preview, so we create a dummy one
-        // or mock the UI state for previewing purposes.
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -207,7 +276,7 @@ fun HeartRateScreenPreview() {
             Text(text = "Status: Disconnected", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = { }) {
-                Text("Start Scan")
+                Text("Connections")
             }
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = { }) {
